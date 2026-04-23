@@ -67,6 +67,34 @@
         color: #ff4d4d;
         font-size: 13px;
     }
+    #lockout {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.92);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        justify-content: center;
+        align-items: center;
+        z-index: 999;
+    }
+    #lockout.active {
+        display: flex;
+    }
+    .lockout-box {
+        text-align: center;
+        padding: 40px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        box-shadow: 0 0 25px rgba(0,0,0,0.5);
+        color: white;
+        font-size: 20px;
+        letter-spacing: 1px;
+        font-weight: normal;
+    }
 </style>
 </head>
 <body>
@@ -77,6 +105,13 @@
     <button onclick="checkPassword()">check magic word?</button>
     <div id="error"></div>
 </div>
+
+<div id="lockout">
+    <div class="lockout-box">
+        get out of here bro 💀
+    </div>
+</div>
+
 <script>
     const passwords = [
         "xab3y4",
@@ -103,8 +138,7 @@
     }
 
     function lockScreen() {
-        document.body.innerHTML =
-            "<div style='height:100vh;display:flex;justify-content:center;align-items:center;background:black;color:red;font-family:Arial;font-size:24px;text-align:center;'>get out of here bro 💀</div>";
+        document.getElementById("lockout").classList.add("active");
     }
 
     document.getElementById("passwordInput").addEventListener("keydown", function(e) {
