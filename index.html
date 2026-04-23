@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>gem alert log in</title>
+<style>
+    body {
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: url("https://media1.tenor.com/m/EsfK9TdObxAAAAAd/gem-alarm-gem-alert.gif") no-repeat center center fixed;
+        background-size: cover;
+        font-family: Arial, sans-serif;
+    }
+    .login-box {
+        text-align: center;
+        padding: 35px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        box-shadow: 0 0 25px rgba(0,0,0,0.5);
+        color: white;
+        width: 280px;
+    }
+    h2 {
+        margin-bottom: 15px;
+        font-weight: normal;
+        letter-spacing: 1px;
+    }
+    input {
+        width: 90%;
+        padding: 12px;
+        font-size: 15px;
+        border-radius: 10px;
+        border: none;
+        outline: none;
+        margin-top: 10px;
+        background: rgba(0,0,0,0.3);
+        color: white;
+        text-align: center;
+    }
+    input::placeholder {
+        color: rgba(255,255,255,0.6);
+    }
+    button {
+        margin-top: 15px;
+        padding: 10px 20px;
+        font-size: 15px;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        background: rgba(255,255,255,0.15);
+        color: white;
+        transition: 0.2s;
+    }
+    button:hover {
+        background: rgba(255,255,255,0.3);
+        transform: scale(1.05);
+    }
+    #error {
+        margin-top: 10px;
+        color: #ff4d4d;
+        font-size: 13px;
+    }
+</style>
+</head>
+<body>
+<div class="login-box">
+    <h2>what's the magic word?</h2>
+    <input type="password" id="passwordInput" placeholder="Password">
+    <br>
+    <button onclick="checkPassword()">check magic word?</button>
+    <div id="error"></div>
+</div>
+<script>
+    const passwords = [
+        "xab3y4",
+        "badideahere",
+        "tashatriplea"
+    ];
+    const gameURL = "https://badideahere.github.io/gemalertmain/";
+    let attempts = 0;
+    const maxAttempts = 3;
+
+    function checkPassword() {
+        const entered = document.getElementById("passwordInput").value;
+        if (passwords.includes(entered)) {
+            window.location.href = gameURL;
+            return;
+        }
+        attempts++;
+        if (attempts >= maxAttempts) {
+            lockScreen();
+        } else {
+            document.getElementById("error").innerText =
+                "Incorrect password (" + attempts + "/" + maxAttempts + ")";
+        }
+    }
+
+    function lockScreen() {
+        document.body.innerHTML =
+            "<div style='height:100vh;display:flex;justify-content:center;align-items:center;background:black;color:red;font-family:Arial;font-size:24px;text-align:center;'>get out of here bro 💀</div>";
+    }
+
+    document.getElementById("passwordInput").addEventListener("keydown", function(e) {
+        if (e.key === "Enter") {
+            checkPassword();
+        }
+    });
+</script>
+</body>
+</html>
