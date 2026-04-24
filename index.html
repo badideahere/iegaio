@@ -17,6 +17,7 @@
 			background-size: cover;
 			font-family: "Orbitron", sans-serif;
 			position: relative;
+			overflow: hidden;
 		}
 
 		body::before {
@@ -72,11 +73,6 @@
 			letter-spacing: 2px;
 		}
 
-		input::placeholder {
-			color: rgba(255, 255, 255, 0.4);
-			letter-spacing: 1px;
-		}
-
 		button {
 			margin-top: 15px;
 			padding: 10px 20px;
@@ -104,40 +100,87 @@
 			letter-spacing: 1px;
 		}
 
+		/* --- SECURITY POPUP STYLES --- */
+		#overlay {
+			display: none;
+			position: fixed;
+			inset: 0;
+			background: rgba(0, 0, 0, 0.85);
+			backdrop-filter: blur(8px);
+			-webkit-backdrop-filter: blur(8px);
+			z-index: 1000;
+		}
+
+		#warning-popup {
+			display: none;
+			position: fixed;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			width: 320px;
+			padding: 30px;
+			background: rgba(20, 10, 10, 0.95);
+			border: 2px solid #ff4d4d;
+			border-radius: 16px;
+			text-align: center;
+			z-index: 1001;
+			box-shadow: 0 0 40px rgba(255, 77, 77, 0.3);
+		}
+
+		.stop-emoji {
+			font-size: 50px;
+			display: block;
+			margin-bottom: 10px;
+		}
+
+		.pulse-text {
+			color: #ff4d4d;
+			font-size: 13px;
+			font-weight: bold;
+			letter-spacing: 1px;
+			line-height: 1.6;
+			animation: pulse-red 1.5s infinite;
+		}
+
+		@keyframes pulse-red {
+			0% { opacity: 1; text-shadow: 0 0 5px #ff4d4d; }
+			50% { opacity: 0.6; text-shadow: 0 0 20px #ff4d4d; }
+			100% { opacity: 1; text-shadow: 0 0 5px #ff4d4d; }
+		}
+
+		#confirmBtn {
+			margin-top: 20px;
+			width: 100%;
+			background: #333;
+			color: #777;
+			cursor: not-allowed;
+			border: 1px solid #444;
+		}
+
+		#confirmBtn.ready {
+			background: #ff4d4d;
+			color: white;
+			cursor: pointer;
+			border: 1px solid #ff8888;
+		}
+
+		/* Lockout screen style */
 		#lockout {
 			display: none;
 			position: fixed;
 			inset: 0;
 			background: rgba(0, 0, 10, 0.95);
-			backdrop-filter: blur(14px);
-			-webkit-backdrop-filter: blur(14px);
 			justify-content: center;
 			align-items: center;
 			z-index: 999;
 		}
 
-		#lockout.active {
-			display: flex;
-		}
-
-		.lockout-box {
-			text-align: center;
-			padding: 40px;
-			border-radius: 16px;
-			background: rgba(10, 20, 60, 0.6);
-			backdrop-filter: blur(12px);
-			-webkit-backdrop-filter: blur(12px);
-			border: 1px solid rgba(100, 160, 255, 0.25);
-			box-shadow: 0 0 40px rgba(80, 140, 255, 0.15);
-			color: white;
-			font-size: 16px;
-			letter-spacing: 2px;
-			font-weight: 400;
-		}
+		#lockout.active { display: flex; }
 	</style>
 </head>
 
-<body>
+<body onload="showWarning()">
+
 	<div class="login-box">
 		<div class="page-title">THE SPACE STATION</div>
 		<h2>Input Launch Code</h2>
@@ -146,54 +189,90 @@
 		<button onclick="checkPassword()">transmit</button>
 		<div id="error"></div>
 	</div>
+
+	<div id="overlay"></div>
+	<div id="warning-popup">
+		<span class="stop-emoji">🛑</span>
+		<p class="pulse-text">
+			REMINDER:<br>
+			Make sure to close the "Click Me" tab.<br>
+			It exposes the main website!
+		</p>
+		<button id="confirmBtn" onclick="closeWarning()" disabled>Wait (3s)</button>
+	</div>
+
 	<div id="lockout">
-		<div class="lockout-box">
+		<div class="login-box" style="border-color: #ff4d4d;">
 			get out of here bro 💀
 		</div>
 	</div>
+
 	<script>
+		// --- Warning Logic ---
+		function showWarning() {
+			document.getElementById('overlay').style.display = 'block';
+			document.getElementById('warning-popup').style.display = 'block';
+			
+			let timeLeft = 3;
+			const btn = document.getElementById('confirmBtn');
+			
+			const timer = setInterval(() => {
+				timeLeft--;
+				if (timeLeft > 0) {
+					btn.innerText = `Wait (${timeLeft}s)`;
+				} else {
+					clearInterval(timer);
+					btn.innerText = "I UNDERSTAND";
+					btn.disabled = false;
+					btn.classList.add('ready');
+				}
+			}, 1000);
+		}
+
+		function closeWarning() {
+			document.getElementById('overlay').style.display = 'none';
+			document.getElementById('warning-popup').style.display = 'none';
+		}
+
+		// --- Original Password Logic ---
 		const hashes = [
-        "71b997b1312098897c7a394615d0a09128b66e68fa8c33b523e09b10ec96d1b7",
-        "a7d6798bb6594564fe059805b2a1d983c907aa643f8c6fecd6d4ce169c56f9b0",
-        "7d808cc6666693e43dd3e6f256a99475459e22390d5382d08346886f4f65b173"
-    ];
+			"71b997b1312098897c7a394615d0a09128b66e68fa8c33b523e09b10ec96d1b7",
+			"a7d6798bb6594564fe059805b2a1d983c907aa643f8c6fecd6d4ce169c56f9b0",
+			"7d808cc6666693e43dd3e6f256a99475459e22390d5382d08346886f4f65b173"
+		];
 
-    const gameURL = "https://badideahere.github.io/gemalertmain/";
-    let attempts = 0;
-    const maxAttempts = 3;
+		const gameURL = "https://badideahere.github.io/gemalertmain/";
+		let attempts = 0;
+		const maxAttempts = 3;
 
-    async function hashInput(str) {
-        const msgBuffer = new TextEncoder().encode(str);
-        const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
-    }
+		async function hashInput(str) {
+			const msgBuffer = new TextEncoder().encode(str);
+			const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
+			const hashArray = Array.from(new Uint8Array(hashBuffer));
+			return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+		}
 
-    async function checkPassword() {
-        const entered = document.getElementById("passwordInput").value;
-        const enteredHash = await hashInput(entered);
-        if (hashes.includes(enteredHash)) {
-            window.location.href = gameURL;
-            return;
-        }
-        attempts++;
-        if (attempts >= maxAttempts) {
-            lockScreen();
-        } else {
-            document.getElementById("error").innerText =
-                "incorrect transmission (" + attempts + "/" + maxAttempts + ")";
-        }
-    }
+		async function checkPassword() {
+			const entered = document.getElementById("passwordInput").value;
+			const enteredHash = await hashInput(entered);
+			if (hashes.includes(enteredHash)) {
+				window.location.href = gameURL;
+				return;
+			}
+			attempts++;
+			if (attempts >= maxAttempts) {
+				document.getElementById("lockout").classList.add("active");
+			} else {
+				document.getElementById("error").innerText =
+					"incorrect transmission (" + attempts + "/" + maxAttempts + ")";
+			}
+		}
 
-    function lockScreen() {
-        document.getElementById("lockout").classList.add("active");
-    }
-
-    document.getElementById("passwordInput").addEventListener("keydown", function(e) {
-        if (e.key === "Enter") {
-            checkPassword();
-        }
-    });
+		document.getElementById("passwordInput").addEventListener("keydown", function(e) {
+			if (e.key === "Enter") {
+				checkPassword();
+			}
+		});
 	</script>
 </body>
 
