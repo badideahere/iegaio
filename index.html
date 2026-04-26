@@ -100,71 +100,6 @@
 			letter-spacing: 1px;
 		}
 
-		/* --- SECURITY POPUP STYLES --- */
-		#overlay {
-			display: none;
-			position: fixed;
-			inset: 0;
-			background: rgba(0, 0, 0, 0.85);
-			backdrop-filter: blur(8px);
-			-webkit-backdrop-filter: blur(8px);
-			z-index: 1000;
-		}
-
-		#warning-popup {
-			display: none;
-			position: fixed;
-			top: 50%;
-			left: 50%;
-			transform: translate(-50%, -50%);
-			width: 320px;
-			padding: 30px;
-			background: rgba(20, 10, 10, 0.95);
-			border: 2px solid #ff4d4d;
-			border-radius: 16px;
-			text-align: center;
-			z-index: 1001;
-			box-shadow: 0 0 40px rgba(255, 77, 77, 0.3);
-		}
-
-		.stop-emoji {
-			font-size: 50px;
-			display: block;
-			margin-bottom: 10px;
-		}
-
-		.pulse-text {
-			color: #ff4d4d;
-			font-size: 13px;
-			font-weight: bold;
-			letter-spacing: 1px;
-			line-height: 1.6;
-			animation: pulse-red 1.5s infinite;
-		}
-
-		@keyframes pulse-red {
-			0% { opacity: 1; text-shadow: 0 0 5px #ff4d4d; }
-			50% { opacity: 0.6; text-shadow: 0 0 20px #ff4d4d; }
-			100% { opacity: 1; text-shadow: 0 0 5px #ff4d4d; }
-		}
-
-		#confirmBtn {
-			margin-top: 20px;
-			width: 100%;
-			background: #333;
-			color: #777;
-			cursor: not-allowed;
-			border: 1px solid #444;
-		}
-
-		#confirmBtn.ready {
-			background: #ff4d4d;
-			color: white;
-			cursor: pointer;
-			border: 1px solid #ff8888;
-		}
-
-		/* Lockout screen style */
 		#lockout {
 			display: none;
 			position: fixed;
@@ -175,30 +110,38 @@
 			z-index: 999;
 		}
 
-		#lockout.active { display: flex; }
+		#lockout.active {
+			display: flex;
+		}
+
+		.reminder {
+			font-size: 10px;
+			color: rgba(255, 255, 255, 0.4);
+			letter-spacing: 1px;
+			margin-top: 20px;
+			line-height: 1.6;
+		}
+
+		.countdown {
+			font-size: 11px;
+			color: rgba(120, 180, 255, 0.6);
+			letter-spacing: 2px;
+			margin-top: 6px;
+		}
 	</style>
 </head>
 
-<body onload="showWarning()">
+<body>
 
-	<div class="login-box">
+	<div class="login-box" id="mainBox">
 		<div class="page-title">THE SPACE STATION</div>
 		<h2>Input Launch Code</h2>
 		<input type="password" id="passwordInput" placeholder="launch code">
 		<br>
 		<button onclick="checkPassword()">transmit</button>
 		<div id="error"></div>
-	</div>
-
-	<div id="overlay"></div>
-	<div id="warning-popup">
-		<span class="stop-emoji">🛑</span>
-		<p class="pulse-text">
-			REMINDER:<br>
-			Make sure to close the "Click Me" tab.<br>
-			It exposes the main website!
-		</p>
-		<button id="confirmBtn" onclick="closeWarning()" disabled>Wait (3s)</button>
+		<div class="reminder">remember to close the click me website</div>
+		<div class="countdown" id="countdown"></div>
 	</div>
 
 	<div id="lockout">
@@ -208,33 +151,6 @@
 	</div>
 
 	<script>
-		// --- Warning Logic ---
-		function showWarning() {
-			document.getElementById('overlay').style.display = 'block';
-			document.getElementById('warning-popup').style.display = 'block';
-			
-			let timeLeft = 3;
-			const btn = document.getElementById('confirmBtn');
-			
-			const timer = setInterval(() => {
-				timeLeft--;
-				if (timeLeft > 0) {
-					btn.innerText = `Wait (${timeLeft}s)`;
-				} else {
-					clearInterval(timer);
-					btn.innerText = "I UNDERSTAND";
-					btn.disabled = false;
-					btn.classList.add('ready');
-				}
-			}, 1000);
-		}
-
-		function closeWarning() {
-			document.getElementById('overlay').style.display = 'none';
-			document.getElementById('warning-popup').style.display = 'none';
-		}
-
-		// --- Original Password Logic ---
 		const hashes = [
 			"71b997b1312098897c7a394615d0a09128b66e68fa8c33b523e09b10ec96d1b7",
 			"a7d6798bb6594564fe059805b2a1d983c907aa643f8c6fecd6d4ce169c56f9b0",
@@ -244,6 +160,7 @@
 		const gameURL = "https://badideahere.github.io/gemalertmain/";
 		let attempts = 0;
 		const maxAttempts = 3;
+		let redirectTimer = null;
 
 		async function hashInput(str) {
 			const msgBuffer = new TextEncoder().encode(str);
@@ -256,7 +173,20 @@
 			const entered = document.getElementById("passwordInput").value;
 			const enteredHash = await hashInput(entered);
 			if (hashes.includes(enteredHash)) {
-				window.location.href = gameURL;
+				document.getElementById("passwordInput").disabled = true;
+				document.querySelector("button").disabled = true;
+				let timeLeft = 3;
+				const countdown = document.getElementById("countdown");
+				countdown.innerText = `redirecting in ${timeLeft}s...`;
+				redirectTimer = setInterval(() => {
+					timeLeft--;
+					if (timeLeft > 0) {
+						countdown.innerText = `redirecting in ${timeLeft}s...`;
+					} else {
+						clearInterval(redirectTimer);
+						window.location.href = gameURL;
+					}
+				}, 1000);
 				return;
 			}
 			attempts++;
@@ -269,9 +199,7 @@
 		}
 
 		document.getElementById("passwordInput").addEventListener("keydown", function(e) {
-			if (e.key === "Enter") {
-				checkPassword();
-			}
+			if (e.key === "Enter") checkPassword();
 		});
 	</script>
 </body>
